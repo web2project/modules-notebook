@@ -3,14 +3,37 @@ if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly.');
 }
 
-$note_id = (int) w2PgetParam($_GET, 'note_id', 0);
+$object_id = (int) w2PgetParam($_GET, 'note_id', 0);
+
+$object = new CNotebook();
+$object->setId($object_id);
 
 // check permissions for this record
-$perms = &$AppUI->acl();
-$canEdit = $perms->checkModule($m, 'edit');
-if (!$canEdit) {
-	$AppUI->redirect('m=public&a=access_denied');
+$canAddEdit = $object->canAddEdit();
+$canAuthor = $object->canCreate();
+$canEdit = $object->canEdit();
+if (!$canAddEdit) {
+	$AppUI->redirect(ACCESS_DENIED);
 }
+
+// load the record data
+$obj = $AppUI->restoreObject();
+if ($obj) {
+    $object = $obj;
+    $object_id = $object->getId();
+} else {
+    $object->load($object_id);
+}
+if (!$object && $object_id > 0) {
+	$AppUI->setMsg('Note');
+    $AppUI->setMsg('invalidID', UI_MSG_ERROR, true);
+    $AppUI->redirect('m=' . $m);
+}
+// $perms = &$AppUI->acl();
+// $canEdit = $perms->checkModule($m, 'edit');
+// if (!$canEdit) {
+// 	$AppUI->redirect('m=public&a=access_denied');
+// }
 
 print '<script type="text/javascript" src="' . w2PgetConfig('base_url') . '/lib/tiny_mce/tiny_mce.js"></script>';
 print '
@@ -67,30 +90,26 @@ $q->leftJoin('contacts', 'cm', 'um.user_contact = cm.contact_id');
 $q->leftJoin('companies', 'co', 'company_id = note_company');
 $q->leftJoin('projects', 'p', 'project_id = note_project');
 $q->leftJoin('tasks', 't', 'task_id = note_task');
-$q->addWhere('note_id = ' . (int)$note_id);
+$q->addWhere('note_id = ' . (int)$object_id);
 
 $df = $AppUI->getPref('SHDATEFORMAT');
 $tf = $AppUI->getPref('TIMEFORMAT');
 
-$note_created = new w2p_Utilities_Date($obj->note_created);
-$note_modified = new w2p_Utilities_Date($obj->note_modified);
+$note_created = new w2p_Utilities_Date($object->note_created);
+$note_modified = new w2p_Utilities_Date($object->note_modified);
 
 // setup the title block
-$ttl = $note_id ? 'Edit Note' : 'Add Note';
+$ttl = $object_id ? 'Edit Note' : 'Add Note';
 $titleBlock = new w2p_Theme_TitleBlock($ttl, 'notebook.png', $m, $m . '.' . $a);
 $titleBlock->addCrumb('?m=' . $m, 'notes list');
-$canDelete = $perms->checkModule($m, 'delete');
-if ($canDelete && $note_id > 0) {
-	$titleBlock->addCrumbDelete('delete note', $canDelete, $msg);
-}
 $titleBlock->show();
 
-if ($obj->note_project) {
-	$note_project = $obj->note_project;
+if ($object->note_project) {
+	$note_project = $object->note_project;
 }
-if ($obj->note_task) {
-	$note_task = $obj->note_task;
-	$task_name = $obj->task_name;
+if ($object->note_task) {
+	$note_task = $object->note_task;
+	$task_name = $object->task_name;
 } elseif ($note_task) {
 	$q->clear();
 	$q->addQuery('task_name');
@@ -101,9 +120,9 @@ if ($obj->note_task) {
 	$task_name = '';
 }
 
-if ($obj->note_company) {
-	$note_company = $obj->note_company;
-	$company_name = $obj->company_name;
+if ($object->note_company) {
+	$note_company = $object->note_company;
+	$company_name = $object->company_name;
 } elseif ($note_company) {
 	$q->clear();
 	$q->addQuery('company_name');
@@ -162,8 +181,8 @@ function setTask( key, val ) {
 <form name="uploadFrm" action="?m=notebook" method="post">
 	<input type="hidden" name="dosql" value="do_note_aed" />
 	<input type="hidden" name="del" value="0" />
-	<input type="hidden" name="note_id" value="<?php echo $note_id; ?>" />
-	<input type="hidden" name="note_creator" value="<?php echo ($note_id ? $obj->note_creator : $AppUI->user_id); ?>" />
+	<input type="hidden" name="note_id" value="<?php echo $object_id; ?>" />
+	<input type="hidden" name="note_creator" value="<?php echo ($object_id ? $object->note_creator : $AppUI->user_id); ?>" />
 	<input type="hidden" name="note_company" value="<?php echo $note_company; ?>" />
 <table width="100%" border="0" cellpadding="3" cellspacing="3" class="std">
 <tr>
@@ -171,36 +190,36 @@ function setTask( key, val ) {
 		<table cellspacing="1" cellpadding="2" width="100%">
 		<tr>
 			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Note Title'); ?>:</td>
-			<td align="left"><input type="text" style="width:400px" class="text" name="note_name" value="<?php echo $obj->note_name; ?>" /></td>
+			<td align="left"><input type="text" style="width:400px" class="text" name="note_name" value="<?php echo $object->note_name; ?>" /></td>
 		</tr>
 		<tr>
 			<td align="right"><?php echo $AppUI->_('Private'); ?>:</td>
 			<td>
-				<input type="checkbox" value="1" name="note_private" <?php echo ($obj->note_private ? 'checked="checked"' : ''); ?> />
+				<input type="checkbox" value="1" name="note_private" <?php echo ($object->note_private ? 'checked="checked"' : ''); ?> />
 			</td>
 		</tr>
-	<?php if ($note_id) { ?>
+	<?php if ($object_id) { ?>
 		<tr>
 			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Created By'); ?>:</td>
-			<td align="left" class="hilite"><?php echo $obj->contact_first_name . ' ' . $obj->contact_last_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?></td>
+			<td align="left" class="hilite"><?php echo $object->contact_first_name . ' ' . $object->contact_last_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?></td>
 		</tr>
 	<?php } ?>
-	<?php if ($obj->note_modified_by) { ?>
+	<?php if ($object->note_modified_by) { ?>
 		<tr>
 			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Modified By'); ?>:</td>
-			<td align="left" class="hilite"><?php echo $obj->modified_first_name . ' ' . $obj->modified_last_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?></td>
+			<td align="left" class="hilite"><?php echo $object->modified_first_name . ' ' . $object->modified_last_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?></td>
 		</tr>
 	<?php } ?>
         <tr>
             <td align="right" nowrap="nowrap"><?php echo $AppUI->_('Category'); ?>:</td>
             <td align="left">
-                    <?php echo arraySelect(w2PgetSysVal('NoteCategory'), 'note_category', 'class="text"', $obj->note_category, true); ?>
+                    <?php echo arraySelect(w2PgetSysVal('NoteCategory'), 'note_category', 'class="text"', $object->note_category, true); ?>
             </td>
 		</tr>
         <tr>
             <td align="right" nowrap="nowrap"><?php echo $AppUI->_('Status'); ?>:</td>
             <td align="left">
-                    <?php echo arraySelect(w2PgetSysVal('NoteStatus'), 'note_status', 'class="text"', $obj->note_status, true); ?>
+                    <?php echo arraySelect(w2PgetSysVal('NoteStatus'), 'note_status', 'class="text"', $object->note_status, true); ?>
             </td>
 		</tr>
 	<?php if ($company_name) { ?>
@@ -230,13 +249,13 @@ echo arraySelect($projects, 'note_project', 'size="1" class="text" style="width:
 		<tr>
 			<td align="right" valign="top" nowrap="nowrap"><?php echo $AppUI->_('Description'); ?>:</td>
 			<td align="left">
-				<textarea class="text" name="note_body"><?php echo $obj->note_body; ?></textarea>
+				<textarea class="text" name="note_body"><?php echo $object->note_body; ?></textarea>
 			</td>
 		</tr>
 
 		<tr>
 			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Note Doc URL'); ?>:</td>
-			<td align="left"><input type="field" class="text" name="note_doc_url" style="width:400px" value="<?php echo $obj->note_doc_url ?>" /></td>
+			<td align="left"><input type="field" class="text" name="note_doc_url" style="width:400px" value="<?php echo $object->note_doc_url ?>" /></td>
 		</tr>
 		</table>
 	</td>
