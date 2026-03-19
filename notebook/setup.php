@@ -41,12 +41,12 @@ class CSetupNotebook extends w2p_System_Setup
 
 		$q->clear();
 		$q->setDelete('sysvals');
-		$q->addWhere('sysval_title = \'NoteCategory\'');
+		$q->addWhere("sysval_title = 'NoteCategory'");
 		$q->exec();
 
 		$q->clear();
 		$q->setDelete('sysvals');
-		$q->addWhere('sysval_title = \'NoteStatus\'');
+		$q->addWhere("sysval_title = 'NoteStatus'");
 		$q->exec();
 
         return parent::remove();
@@ -58,25 +58,25 @@ class CSetupNotebook extends w2p_System_Setup
 		$q->createTable('notes');
 		$q->createDefinition('(
             `note_id` int(10) unsigned NOT NULL auto_increment,
-            `note_parent` int(10) unsigned NOT NULL default \'0\',
-            `note_company` int(10) unsigned NOT NULL default \'0\',
-            `note_department` int(10) unsigned NOT NULL default \'0\',
-            `note_project` int(10) unsigned NOT NULL default \'0\',
-            `note_task` int(10) unsigned NOT NULL default \'0\',
-            `note_file` int(10) unsigned NOT NULL default \'0\',
-            `note_module` int(10) unsigned NOT NULL default \'0\',
+            `note_parent` int(10) unsigned NOT NULL default 0,
+            `note_company` int(10) unsigned NOT NULL default 0,
+            `note_department` int(10) unsigned NOT NULL default 0,
+            `note_project` int(10) unsigned NOT NULL default 0,
+            `note_task` int(10) unsigned NOT NULL default 0,
+            `note_file` int(10) unsigned NOT NULL default 0,
+            `note_module` int(10) unsigned NOT NULL default 0,
             `note_module_name` varchar(64) NOT NULL default \'\',
-            `note_record_id` int(10) unsigned NOT NULL default \'0\',
-            `note_category` int(3) unsigned NOT NULL default \'0\',
-            `note_status` int(3) unsigned NOT NULL default \'0\',
+            `note_record_id` int(10) unsigned NOT NULL default 0,
+            `note_category` int(3) unsigned NOT NULL default 0,
+            `note_status` int(3) unsigned NOT NULL default 0,
             `note_title` varchar(255) NOT NULL default \'\',
             `note_body` text NOT NULL,
             `note_doc_url` varchar(255) NOT NULL default \'\',
-            `note_private` int(1) unsigned NOT NULL default \'0\',
-            `note_creator` int(10) unsigned NOT NULL default \'0\',
-            `note_created` datetime NOT NULL default \'0000-00-00 00:00:00\',
+            `note_private` int(1) unsigned NOT NULL default 0,
+            `note_creator` int(10) unsigned NOT NULL default 0,
+            `note_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `note_modified` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-            `note_modified_by` int(10) unsigned NOT NULL default \'0\',
+            `note_modified_by` int(10) unsigned NOT NULL default 0,
             PRIMARY KEY  (`note_id`),
             KEY idx_note_company ( note_company ) ,
             KEY idx_note_project ( note_project ) ,
@@ -142,7 +142,7 @@ class CSetupNotebook extends w2p_System_Setup
         $q->addUpdate('note_name', 'note_title', false, true);
         $q->exec();
 
-        $module = new w2p_Core_Module();
+        $module = new w2p_System_Module();
         $fieldList = array('note_name', 'note_category', 'note_status', 'note_project', 'note_task',
             'note_creator', 'note_created');
         $fieldNames = array('Note Title', 'Category', 'Status', 'Project', 'Task', 'Creator', 'Date');
@@ -150,5 +150,4 @@ class CSetupNotebook extends w2p_System_Setup
 
         return true;
     }
-
 }
