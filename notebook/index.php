@@ -34,6 +34,9 @@ $status = arrayMerge(array('-1' => $AppUI->_('All', UI_OUTPUT_JS)), $status);
 $search_string = w2PgetParam($_POST, 'search_string', '');
 $search_string = w2PformSafe($search_string, true);
 
+$notebook = new CNotebook();
+$canCreate = $notebook->canCreate();
+
 // setup the title block
 $titleBlock = new w2p_Theme_TitleBlock('Notebook', 'notebook.png', $m, $m . '.' . $a);
 $titleBlock->addSearchCell($search_string);
@@ -41,7 +44,7 @@ $titleBlock->addFilterCell('Company', 'company_id', $companies, $company_id);
 $titleBlock->addFilterCell('Project', 'project_id', $projects, $project_id);
 $titleBlock->addFilterCell('Status', 'note_status', $status, $note_status);
 
-if ($canEdit) {
+if ($canCreate) {
 	$titleBlock->addCell('<input type="submit" class="button" value="' . $AppUI->_('new note') . '">', '', '<form action="?m=notebook&a=addedit" method="post">', '</form>');
 }
 $titleBlock->show();

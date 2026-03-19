@@ -69,20 +69,6 @@ $q->leftJoin('projects', 'p', 'project_id = note_project');
 $q->leftJoin('tasks', 't', 'task_id = note_task');
 $q->addWhere('note_id = ' . (int)$note_id);
 
-// check if this record has dependancies to prevent deletion
-$msg = '';
-$obj = new CNotebook();
-$canDelete = $obj->canDelete($msg, $note_id);
-
-$obj = null;
-$q->loadObject($obj);
-// load the record data
-if (!$obj && $note_id > 0) {
-	$AppUI->setMsg('Note');
-	$AppUI->setMsg('invalidID', UI_MSG_ERROR, true);
-	$AppUI->redirect();
-}
-
 $df = $AppUI->getPref('SHDATEFORMAT');
 $tf = $AppUI->getPref('TIMEFORMAT');
 
