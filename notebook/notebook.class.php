@@ -77,4 +77,24 @@ class CNotebook extends w2p_Core_BaseObject
 
         parent::hook_preStore();
     }
+
+    public function loadAll($order = null, $where = null)
+    {
+        $q = $this->_getQuery();
+        $q->addQuery('notes.*');
+        $q->addTable($this->_tbl);
+        $q->addOrder('note_modified');
+
+        if ($where) {
+            $q->addWhere($where);
+        }
+
+        $q->leftJoin('users', 'u', 'user_id = note_creator');
+        $q->leftJoin('contacts', 'c', 'user_contact = contact_id');
+        $q->addQuery('contact_first_name, contact_last_name');
+
+        // TODO: respect permissions
+
+        return $q->loadHashList($this->_tbl_key);
+    }
 }
