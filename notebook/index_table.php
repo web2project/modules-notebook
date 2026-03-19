@@ -43,23 +43,36 @@ $module = new w2p_System_Module();
 $fields = $module->loadSettings('notebook', 'index_list');
 
 if (0 == count($fields)) {
-    $fieldList = array('note_title', 'note_category', 'note_status', 'note_project', 'note_task', 'note_creator', 'note_created');
+    $fieldList = array('note_name', 'note_category', 'note_status', 'note_project', 'note_task', 'note_creator', 'note_created');
     $fieldNames = array('Note Title', 'Category', 'Status', 'Project', 'Task', 'Creator', 'Date');
 
 	$module->storeSettings('notebook', 'index_list', $fieldList, $fieldNames);
     $fields = array_combine($fieldList, $fieldNames);
 }
 
+$xpg_pagesize = w2PgetConfig('page_size', 50);
+$xpg_min = $xpg_pagesize * ($page - 1); // This is where we start our record set from
+// counts total recs from selection
+$xpg_totalrecs = count($items);
+$items = array_slice($items, $xpg_min, $xpg_pagesize);
+
+$pageNav = buildPaginationNav($AppUI, $m, $tab, $xpg_totalrecs, $xpg_pagesize, $page);
+echo $pageNav;
+
 $note_category = w2PgetSysVal('NoteCategory');
 $note_status = w2PgetSysVal('NoteStatus');
 $customLookups = array('note_category' => $note_category, 'note_status' => $note_status);
 
-
+$listTable = new w2p_Output_ListTable($AppUI);
+echo $listTable->startTable('notebook');
+echo $listTable->buildHeader($fields);
 /*
- * I really hate that we have to do this but this module doesn't stick to our naming conventions and I have yet to
- *   come up with a better approach.  - caseydk, 22 Nov 2017
- */
-ob_start();
-include $AppUI->getTheme()->resolveTemplate('list');
-$_output = ob_get_clean();
+ * Begin: I hate that we have to capture the result and do a string replace but this doesn't follow the naming convention
+*/
+$_output = $listTable->buildRows($items, $customLookups);
 echo str_replace('m=notes', 'm=notebook', $_output);
+/*
+ * End
+ */
+echo $listTable->endTable();
+echo $pageNav;
