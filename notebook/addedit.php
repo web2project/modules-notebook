@@ -145,18 +145,18 @@ $projects = arrayMerge(array('0' => $AppUI->_('All', UI_OUTPUT_JS)), $projects);
 ?>
 <script language="javascript" type="text/javascript">
 function submitIt() {
-	var f = document.uploadFrm;
+	var f = document.editFrm;
 	f.submit();
 }
 function delIt() {
 	if (confirm( "<?php echo $AppUI->_('notesDelete', UI_OUTPUT_JS); ?>" )) {
-		var f = document.uploadFrm;
+		var f = document.editFrm;
 		f.del.value='1';
 		f.submit();
 	}
 }
 function popTask() {
-    var f = document.uploadFrm;
+    var f = document.editFrm;
     if (f.note_project.selectedIndex == 0) {
         alert( "<?php echo $AppUI->_('Please select a project first!', UI_OUTPUT_JS); ?>" );
     } else {
@@ -167,7 +167,7 @@ function popTask() {
 
 // Callback function for the generic selector
 function setTask( key, val ) {
-    var f = document.uploadFrm;
+    var f = document.editFrm;
     if (val != '') {
         f.note_task.value = key;
         f.task_name.value = val;
@@ -178,95 +178,70 @@ function setTask( key, val ) {
 }
 </script>
 
-<form name="uploadFrm" action="?m=notebook" method="post">
+<form name="editFrm" action="?m=notebook" method="post" class="form-horizontal addedit notebook">
 	<input type="hidden" name="dosql" value="do_note_aed" />
-	<input type="hidden" name="del" value="0" />
 	<input type="hidden" name="note_id" value="<?php echo $object_id; ?>" />
-	<input type="hidden" name="note_creator" value="<?php echo ($object_id ? $object->note_creator : $AppUI->user_id); ?>" />
 	<input type="hidden" name="note_company" value="<?php echo $note_company; ?>" />
-<table width="100%" border="0" cellpadding="3" cellspacing="3" class="std">
-<tr>
-	<td width="100%" valign="top" align="center">
-		<table cellspacing="1" cellpadding="2" width="100%">
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Note Title'); ?>:</td>
-			<td align="left"><input type="text" style="width:400px" class="text" name="note_name" value="<?php echo $object->note_name; ?>" /></td>
-		</tr>
-		<tr>
-			<td align="right"><?php echo $AppUI->_('Private'); ?>:</td>
-			<td>
+	<div class="std addedit notebook">
+		<div class="column left">
+			<p>
+				<label><?php echo $AppUI->_('Note Title'); ?>:</label>
+				<input type="text" class="text name" name="note_name" value="<?php echo $object->note_name; ?>" />
+			</p>
+			<p>
+				<label><?php echo $AppUI->_('Private'); ?>:</label>
 				<input type="checkbox" value="1" name="note_private" <?php echo ($object->note_private ? 'checked="checked"' : ''); ?> />
-			</td>
-		</tr>
-	<?php if ($object_id) { ?>
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Created By'); ?>:</td>
-			<td align="left" class="hilite"><?php echo $object->contact_first_name . ' ' . $object->contact_last_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?></td>
-		</tr>
-	<?php } ?>
-	<?php if ($object->note_modified_by) { ?>
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Modified By'); ?>:</td>
-			<td align="left" class="hilite"><?php echo $object->modified_first_name . ' ' . $object->modified_last_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?></td>
-		</tr>
-	<?php } ?>
-        <tr>
-            <td align="right" nowrap="nowrap"><?php echo $AppUI->_('Category'); ?>:</td>
-            <td align="left">
-                    <?php echo arraySelect(w2PgetSysVal('NoteCategory'), 'note_category', 'class="text"', $object->note_category, true); ?>
-            </td>
-		</tr>
-        <tr>
-            <td align="right" nowrap="nowrap"><?php echo $AppUI->_('Status'); ?>:</td>
-            <td align="left">
-                    <?php echo arraySelect(w2PgetSysVal('NoteStatus'), 'note_status', 'class="text"', $object->note_status, true); ?>
-            </td>
-		</tr>
-	<?php if ($company_name) { ?>
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Company'); ?>:</td>
-			<td align="left" class="hilite"><?php echo $company_name; ?></td>
-		</tr>
-	<?php } ?>
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Project'); ?>:</td>
-			<td align="left">
-			<?php
-echo arraySelect($projects, 'note_project', 'size="1" class="text" style="width:270px"', $note_project);
-?>
-			</td>
-		</tr>
-
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Task'); ?>:</td>
-			<td align="left" colspan="2" valign="top">
+			</p>
+			<?php if ($object_id) { ?>
+				<p>
+					<label><?php echo $AppUI->_('Created By'); ?>:</label>
+					<?php echo $object->contact_first_name . ' ' . $object->contact_last_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?>
+				</p>
+				<p>
+					<label><?php echo $AppUI->_('Modified By'); ?>:</label>
+					<?php echo $object->modified_first_name . ' ' . $object->modified_last_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?>
+				</p>
+			<?php } ?>
+			<p>
+				<label><?php echo $AppUI->_('Category'); ?>:</label>
+				<?php echo arraySelect(w2PgetSysVal('NoteCategory'), 'note_category', 'class="text"', $object->note_category, true); ?>
+			</p>
+			<p>
+				<label><?php echo $AppUI->_('Status'); ?>:</label>
+				<?php echo arraySelect(w2PgetSysVal('NoteStatus'), 'note_status', 'class="text"', $object->note_status, true); ?>
+			</p>
+			<?php if ($object->note_company) { ?>
+				<p>
+					<label><?php echo $AppUI->_('Company'); ?>:</label>
+					<?php echo $company_name; ?>
+				</p>
+			<?php } ?>
+			<?php if ($object->note_project) { ?>
+				<p>
+					<label><?php echo $AppUI->_('Project'); ?>:</label>
+					<?php echo arraySelect($projects, 'note_project', 'size="1" class="text" style="width:270px"', $note_project); ?>
+				</p>
+			<?php } ?>
+			<p>
+				<label><?php echo $AppUI->_('Task'); ?>:</label>
 				<input type="hidden" name="note_task" value="<?php echo $note_task; ?>" />
 				<input type="text" class="text" name="task_name" value="<?php echo $task_name; ?>" size="40" disabled="disabled" />
 				<input type="button" class="button" value="<?php echo $AppUI->_('select task'); ?>..." onclick="popTask()" />
-			</td>
-		</tr>
-
-		<tr>
-			<td align="right" valign="top" nowrap="nowrap"><?php echo $AppUI->_('Description'); ?>:</td>
-			<td align="left">
-				<textarea class="text" name="note_body"><?php echo $object->note_body; ?></textarea>
-			</td>
-		</tr>
-
-		<tr>
-			<td align="right" nowrap="nowrap"><?php echo $AppUI->_('Note Doc URL'); ?>:</td>
-			<td align="left"><input type="field" class="text" name="note_doc_url" style="width:400px" value="<?php echo $object->note_doc_url ?>" /></td>
-		</tr>
-		</table>
-	</td>
-</tr>
-<tr>
-	<td>
-		<input class="button" type="button" name="cancel" value="<?php echo $AppUI->_('cancel'); ?>" onclick="javascript:if(confirm('<?php echo $AppUI->_('Are you sure you want to cancel?', UI_OUTPUT_JS); ?>')){location.href = './index.php?m=notebook';}" />
-	</td>
-	<td align="right">
-		<input type="button" class="button" value="<?php echo $AppUI->_('submit'); ?>" onclick="submitIt()" />
-	</td>
-</tr>
+			</p>
+			<p>
+				<label><?php echo $AppUI->_('Description'); ?>:</label>
+				<textarea class="description" name="note_body"><?php echo $object->note_body; ?></textarea>
+			</p>
+			<p>
+				<label><?php echo $AppUI->_('Note Doc URL'); ?>:</label>
+				<input type="field" class="text url" name="note_doc_url" value="<?php echo $object->note_doc_url ?>" />
+				<a href="javascript: void(0);" onclick="testURL()">[test]</a>
+			</p>
+			<p>
+				<label></label>
+			</p>
+			<input type="button" class="cancel button btn btn-danger" value="<?php echo $AppUI->_('back'); ?>" onclick="javascript:history.back(-1)" />
+			<input type="button" class="save button btn btn-primary" value="<?php echo $AppUI->_('save'); ?>" onclick="submitIt()" />
+		</div>
+	</div>
 </form>
-</table>
