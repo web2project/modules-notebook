@@ -29,11 +29,15 @@ if (!$object && $object_id > 0) {
     $AppUI->setMsg('invalidID', UI_MSG_ERROR, true);
     $AppUI->redirect('m=' . $m);
 }
-// $perms = &$AppUI->acl();
-// $canEdit = $perms->checkModule($m, 'edit');
-// if (!$canEdit) {
-// 	$AppUI->redirect('m=public&a=access_denied');
-// }
+
+$_creator = new CUser();
+$_creator->load($object->note_creator);
+$creator = new CContact();
+$creator->load($_creator->user_contact);
+$_modifier = new CUser();
+$_modifier->load($object->note_modified_by);
+$modifier = new CContact();
+$modifier->load($_modifier->user_contact);
 
 print '<script type="text/javascript" src="' . w2PgetConfig('base_url') . '/lib/tiny_mce/tiny_mce.js"></script>';
 print '
@@ -120,19 +124,6 @@ if ($object->note_task) {
 	$task_name = '';
 }
 
-if ($object->note_company) {
-	$note_company = $object->note_company;
-	$company_name = $object->company_name;
-} elseif ($note_company) {
-	$q->clear();
-	$q->addQuery('company_name');
-	$q->addTable('companies');
-	$q->addWhere('company_id = ' . (int)$note_company);
-	$company_name = $q->loadResult();
-} else {
-	$company_name = '';
-}
-
 if (intval(w2PgetParam($_GET, 'company_id', 0))) {
 	$extra = array('where' => 'project_active = 1 AND project_company = ' . $note_company);
 } else {
@@ -148,13 +139,7 @@ function submitIt() {
 	var f = document.editFrm;
 	f.submit();
 }
-function delIt() {
-	if (confirm( "<?php echo $AppUI->_('notesDelete', UI_OUTPUT_JS); ?>" )) {
-		var f = document.editFrm;
-		f.del.value='1';
-		f.submit();
-	}
-}
+
 function popTask() {
     var f = document.editFrm;
     if (f.note_project.selectedIndex == 0) {
@@ -195,11 +180,11 @@ function setTask( key, val ) {
 			<?php if ($object_id) { ?>
 				<p>
 					<label><?php echo $AppUI->_('Created By'); ?>:</label>
-					<?php echo $object->contact_first_name . ' ' . $object->contact_last_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?>
+					<?php echo $creator->contact_display_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?>
 				</p>
 				<p>
 					<label><?php echo $AppUI->_('Modified By'); ?>:</label>
-					<?php echo $object->modified_first_name . ' ' . $object->modified_last_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?>
+					<?php echo $modifier->contact_display_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?>
 				</p>
 			<?php } ?>
 			<p>
