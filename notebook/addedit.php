@@ -75,6 +75,16 @@ $titleBlock = new w2p_Theme_TitleBlock($ttl, 'notebook.png', $m, $m . '.' . $a);
 $titleBlock->addCrumb('?m=' . $m, 'notes list');
 $titleBlock->show();
 
+if ($object->note_company) {
+	$note_company = (int) $object->note_company;
+}
+$company_name = '';
+if ($note_company) {
+	$_company = new CCompany();
+	if ($_company->load($note_company)) {
+		$company_name = $_company->company_name;
+	}
+}
 if ($object->note_project) {
 	$note_project = $object->note_project;
 }
@@ -178,10 +188,10 @@ function setTask( key, val ) {
 				<label><?php echo $AppUI->_('Status'); ?>:</label>
 				<?php echo arraySelect(w2PgetSysVal('NoteStatus'), 'note_status', 'class="text"', $object->note_status, true); ?>
 			</p>
-			<?php if ($object->note_company) { ?>
+			<?php if ($company_name) { ?>
 				<p>
 					<label><?php echo $AppUI->_('Company'); ?>:</label>
-					<?php echo $company_name; ?>
+					<?php echo htmlspecialchars($company_name, ENT_QUOTES); ?>
 				</p>
 			<?php } ?>
 			<p>
