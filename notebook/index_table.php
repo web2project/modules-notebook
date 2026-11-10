@@ -3,16 +3,23 @@ if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly.');
 }
 global $AppUI, $deny1, $canRead, $canEdit;
-global $notebook, $company_id, $project_id, $task_id, $user_id, $note_status, $showCompany, $m, $tab, $search_string;
-global $company, $noteCategoryTabs, $notebookCreator, $notebookPageUrl;
+global $notebook, $showCompany, $m, $tab;
+global $company, $noteCategoryTabs, $notebookFilter, $notebookPageUrl;
 
-$company_id = (int) w2PgetParam($_REQUEST, 'company_id', 0);
-$project_id = (int) w2PgetParam($_REQUEST, 'project_id', 0);
-$task_id = (int) w2PgetParam($_REQUEST, 'task_id', 0);
-$note_status = (int) w2PgetParam($_REQUEST, 'note_status', 0);
+/*
+ * $notebookFilter is set by whoever includes this list: the Notebook index
+ *   (company, project, status and search, kept in the session) or a Notes
+ *   tab on another module's page (its company, project, task or creator).
+ */
+$filter = is_array($notebookFilter) ? $notebookFilter : array();
+$company_id = (int) ($filter['company'] ?? 0);
+$project_id = (int) ($filter['project'] ?? 0);
+$task_id = (int) ($filter['task'] ?? 0);
+$creator_id = (int) ($filter['creator'] ?? 0);
+$note_status = (int) ($filter['status'] ?? -1);
+$search = (string) ($filter['search'] ?? '');
 
-$page = (int) w2PgetParam($_REQUEST, 'page', 1);
-$search = w2PgetParam($_REQUEST, 'search_string', '');
+$page = max(1, (int) w2PgetParam($_GET, 'page', 1));
 
 $project = new CProject();
 $task = new CTask();
@@ -21,7 +28,8 @@ $notebook = new CNotebook();
 $where = [];
 
 if ($company_id) {
-	$where[] = "note_company = $company_id";
+	// filed on the company, or on one of its projects
+	$where[] = "(note_company = $company_id OR note_project IN (SELECT project_id FROM projects WHERE project_company = $company_id))";
 }
 if ($project_id) {
 	$where[] = "note_project = $project_id";
@@ -38,10 +46,10 @@ if (is_array($noteCategoryTabs) && isset($this) && $this instanceof w2p_Theme_Ta
 		$where[] = 'note_category = ' . (int) $_category;
 	}
 }
-if ((int) $notebookCreator) {
-	$where[] = 'note_creator = ' . (int) $notebookCreator;
+if ($creator_id) {
+	$where[] = "note_creator = $creator_id";
 }
-if ($note_status > 0) {
+if ($note_status >= 0) {
 	$where[] = "note_status = $note_status";
 }
 if ('' !== $search) {

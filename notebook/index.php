@@ -6,6 +6,14 @@ if (!defined('W2P_BASE_DIR')) {
 $company_id = $AppUI->processIntState('NoteIdxCompany', $_POST, 'company_id', 0);
 $project_id = $AppUI->processIntState('NoteIdxProject', $_POST, 'project_id', 0);
 $note_status = $AppUI->processIntState('NoteIdxStatus', $_POST, 'note_status', -1);
+if (isset($_POST['search_string'])) {
+	$AppUI->setState('NoteIdxSearch', trim((string) w2PgetParam($_POST, 'search_string', '')));
+}
+$search_string = (string) $AppUI->getState('NoteIdxSearch');
+
+// the list (index_table.php) is filtered by these
+$notebookFilter = array('company' => $company_id, 'project' => $project_id,
+	'status' => $note_status, 'search' => $search_string);
 
 
 if (w2PgetParam($_GET, 'tab', -1) != -1) {
@@ -14,14 +22,14 @@ if (w2PgetParam($_GET, 'tab', -1) != -1) {
 $tab = $AppUI->getState('NoteIdxTab') !== null ? $AppUI->getState('NoteIdxTab') : 0;
 $active = intval(!$AppUI->getState('NoteIdxTab'));
 
-// get the list of visible companies
-$extra = array('from' => 'notes', 'where' => 'companies.company_id = note_company');
+// the companies with notes, filed on the company or on one of its projects
+$extra = array('from' => 'notes', 'where' => '(companies.company_id = note_company OR companies.company_id IN (SELECT project_company FROM projects WHERE project_id = note_project))');
 
 $company = new CCompany();
 $companies = $company->getAllowedRecords($AppUI->user_id, 'companies.company_id,company_name', 'company_name', null, $extra, 'companies');
 $companies = arrayMerge(array('0' => $AppUI->_('All', UI_OUTPUT_JS)), $companies);
 
-// get the list of visible companies
+// the projects with notes
 $extra = array('from' => 'notes', 'where' => 'projects.project_id = note_project');
 
 $project = new CProject();
@@ -31,8 +39,6 @@ $projects = arrayMerge(array('0' => $AppUI->_('All', UI_OUTPUT_JS)), $projects);
 $status = w2PgetSysVal('NoteStatus');
 $status = arrayMerge(array('-1' => $AppUI->_('All', UI_OUTPUT_JS)), $status);
 
-$search_string = w2PgetParam($_POST, 'search_string', '');
-$search_string = w2PformSafe($search_string, true);
 
 $notebook = new CNotebook();
 if (!$notebook->canAccess()) {
@@ -42,7 +48,7 @@ $canCreate = $notebook->canCreate();
 
 // setup the title block
 $titleBlock = new w2p_Theme_TitleBlock('Notebook', 'notebook.png', $m, $m . '.' . $a);
-$titleBlock->addSearchCell($search_string);
+$titleBlock->addSearchCell(htmlspecialchars($search_string, ENT_QUOTES));
 $titleBlock->addFilterCell('Company', 'company_id', $companies, $company_id);
 $titleBlock->addFilterCell('Project', 'project_id', $projects, $project_id);
 $titleBlock->addFilterCell('Status', 'note_status', $status, $note_status);
