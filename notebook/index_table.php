@@ -4,7 +4,7 @@ if (!defined('W2P_BASE_DIR')) {
 }
 global $AppUI, $deny1, $canRead, $canEdit;
 global $notebook, $company_id, $project_id, $task_id, $user_id, $note_status, $showCompany, $m, $tab, $search_string;
-global $company, $noteCategoryTabs;
+global $company, $noteCategoryTabs, $notebookCreator;
 
 $company_id = (int) w2PgetParam($_REQUEST, 'company_id', 0);
 $project_id = (int) w2PgetParam($_REQUEST, 'project_id', 0);
@@ -37,6 +37,9 @@ if (is_array($noteCategoryTabs) && isset($this) && $this instanceof w2p_Theme_Ta
 	if ($_category >= 0) {
 		$where[] = 'note_category = ' . (int) $_category;
 	}
+}
+if ((int) $notebookCreator) {
+	$where[] = 'note_creator = ' . (int) $notebookCreator;
 }
 if ($note_status > 0) {
 	$where[] = "note_status = $note_status";
