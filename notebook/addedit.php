@@ -80,6 +80,15 @@ if ($object->note_project) {
 }
 if ($object->note_task) {
 	$note_task = $object->note_task;
+}
+// a note on a task belongs to the task's project
+if ($note_task && !$note_project) {
+	$_task = new CTask();
+	$_task->load($note_task);
+	$note_project = (int) $_task->task_project;
+}
+if ($object->note_task) {
+	$note_task = $object->note_task;
 	$task_name = $object->task_name;
 } elseif ($note_task) {
 	$q->clear();
@@ -98,7 +107,14 @@ if (intval(w2PgetParam($_GET, 'company_id', 0))) {
 }
 $project = new CProject();
 $projects = $project->getAllowedRecords($AppUI->user_id, 'projects.project_id,project_name', 'project_name', null, $extra, 'projects');
-$projects = arrayMerge(array('0' => $AppUI->_('All', UI_OUTPUT_JS)), $projects);
+// keep the note's own project selectable even if it is no longer active
+if ($note_project && !isset($projects[$note_project])) {
+	$_project = new CProject();
+	if ($_project->load($note_project)) {
+		$projects[$note_project] = $_project->project_name;
+	}
+}
+$projects = arrayMerge(array('0' => $AppUI->_('None')), $projects);
 
 ?>
 <script language="javascript" type="text/javascript">
@@ -168,12 +184,10 @@ function setTask( key, val ) {
 					<?php echo $company_name; ?>
 				</p>
 			<?php } ?>
-			<?php if ($object->note_project) { ?>
-				<p>
-					<label><?php echo $AppUI->_('Project'); ?>:</label>
-					<?php echo arraySelect($projects, 'note_project', 'size="1" class="text" style="width:270px"', $note_project); ?>
-				</p>
-			<?php } ?>
+			<p>
+				<label><?php echo $AppUI->_('Project'); ?>:</label>
+				<?php echo arraySelect($projects, 'note_project', 'size="1" class="text" style="width:270px" onchange="setTask(0, \'\')"', $note_project); ?>
+			</p>
 			<p>
 				<label><?php echo $AppUI->_('Task'); ?>:</label>
 				<input type="hidden" name="note_task" value="<?php echo $note_task; ?>" />

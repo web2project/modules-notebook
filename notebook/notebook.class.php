@@ -71,6 +71,21 @@ class CNotebook extends w2p_Core_BaseObject
 
     protected function hook_preStore()
     {
+        // A note on a task belongs to the task's project, and a note on a
+        //   project to the project's company.
+        if ((int) $this->note_task) {
+            $task = new CTask();
+            if ($task->load((int) $this->note_task)) {
+                $this->note_project = (int) $task->task_project;
+            }
+        }
+        if ((int) $this->note_project) {
+            $project = new CProject();
+            if ($project->load((int) $this->note_project)) {
+                $this->note_company = (int) $project->project_company;
+            }
+        }
+
         $q = $this->_getQuery();
         $this->note_modified = $q->dbfnNowWithTZ();
         $this->note_modified_by = $this->_AppUI->user_id;
