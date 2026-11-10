@@ -171,7 +171,7 @@ function setTask( key, val ) {
 		<div class="column left">
 			<p>
 				<label><?php echo $AppUI->_('Note Title'); ?>:</label>
-				<input type="text" class="text name" name="note_name" value="<?php echo $object->note_name; ?>" />
+				<input type="text" class="text name" name="note_name" value="<?php echo htmlspecialchars((string) $object->note_name, ENT_QUOTES); ?>" />
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Private'); ?>:</label>
@@ -180,11 +180,11 @@ function setTask( key, val ) {
 			<?php if ($object_id) { ?>
 				<p>
 					<label><?php echo $AppUI->_('Created By'); ?>:</label>
-					<?php echo $creator->contact_display_name; ?>, <?php echo $note_created->format($df . ' ' . $tf); ?>
+					<?php echo htmlspecialchars((string) $creator->contact_display_name, ENT_QUOTES); ?>, <?php echo $note_created->format($df . ' ' . $tf); ?>
 				</p>
 				<p>
 					<label><?php echo $AppUI->_('Modified By'); ?>:</label>
-					<?php echo $modifier->contact_display_name; ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?>
+					<?php echo htmlspecialchars((string) $modifier->contact_display_name, ENT_QUOTES); ?>, <?php echo $note_modified->format($df . ' ' . $tf); ?>
 				</p>
 			<?php } ?>
 			<p>
@@ -210,16 +210,16 @@ function setTask( key, val ) {
 			<p>
 				<label><?php echo $AppUI->_('Task'); ?>:</label>
 				<input type="hidden" name="note_task" value="<?php echo $note_task; ?>" />
-				<input type="text" class="text" name="task_name" value="<?php echo $task_name; ?>" size="40" disabled="disabled" />
+				<input type="text" class="text" name="task_name" value="<?php echo htmlspecialchars((string) $task_name, ENT_QUOTES); ?>" size="40" disabled="disabled" />
 				<input type="button" class="button" value="<?php echo $AppUI->_('select task'); ?>..." onclick="popTask()" />
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Description'); ?>:</label>
-				<textarea class="description" name="note_body"><?php echo $object->note_body; ?></textarea>
+				<textarea class="description" name="note_body"><?php echo htmlspecialchars((string) $object->note_body, ENT_QUOTES); ?></textarea>
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Note Doc URL'); ?>:</label>
-				<input type="field" class="text url" name="note_doc_url" value="<?php echo $object->note_doc_url ?>" />
+				<input type="field" class="text url" name="note_doc_url" value="<?php echo htmlspecialchars((string) $object->note_doc_url, ENT_QUOTES); ?>" />
 				<a href="javascript: void(0);" onclick="testURL()">[test]</a>
 			</p>
 			<p>
