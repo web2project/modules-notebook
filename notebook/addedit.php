@@ -175,13 +175,13 @@ function setTask( key, val ) {
 			<?php } ?>
 			<p>
 				<label><?php echo $AppUI->_('Project'); ?>:</label>
-				<?php echo arraySelect($projects, 'note_project', 'size="1" class="text" style="width:270px" onchange="setTask(0, \'\')"', $note_project); ?>
+				<?php echo arraySelect($projects, 'note_project', 'size="1" class="text" onchange="setTask(0, \'\')"', $note_project); ?>
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Task'); ?>:</label>
 				<input type="hidden" name="note_task" value="<?php echo $note_task; ?>" />
 				<input type="text" class="text" name="task_name" value="<?php echo htmlspecialchars((string) $task_name, ENT_QUOTES); ?>" size="40" disabled="disabled" />
-				<input type="button" class="button" value="<?php echo $AppUI->_('select task'); ?>..." onclick="popTask()" />
+				<input type="button" class="button btn btn-secondary btn-sm" value="<?php echo $AppUI->_('select task'); ?>..." onclick="popTask()" />
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Description'); ?>:</label>
@@ -190,10 +190,7 @@ function setTask( key, val ) {
 			<p>
 				<label><?php echo $AppUI->_('Note Doc URL'); ?>:</label>
 				<input type="url" class="text url" name="note_doc_url" value="<?php echo htmlspecialchars((string) $object->note_doc_url, ENT_QUOTES); ?>" />
-				<a href="javascript: void(0);" onclick="testURL()">[test]</a>
-			</p>
-			<p>
-				<label></label>
+				<a href="javascript: void(0);" class="btn btn-link btn-sm" onclick="testURL()"><?php echo $AppUI->_('test'); ?></a>
 			</p>
 			<input type="button" class="cancel button btn btn-danger" value="<?php echo $AppUI->_('back'); ?>" onclick="javascript:history.back(-1)" />
 			<input type="button" class="save button btn btn-primary" value="<?php echo $AppUI->_('save'); ?>" onclick="submitIt()" />

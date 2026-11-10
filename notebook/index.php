@@ -54,7 +54,7 @@ $titleBlock->addFilterCell('Project', 'project_id', $projects, $project_id);
 $titleBlock->addFilterCell('Status', 'note_status', $status, $note_status);
 
 if ($canCreate) {
-	$titleBlock->addCell('<input type="submit" class="button" value="' . $AppUI->_('new note') . '">', '', '<form action="?m=notebook&a=addedit" method="post">', '</form>');
+	$titleBlock->addButton('new note', '?m=notebook&a=addedit');
 }
 $titleBlock->show();
 

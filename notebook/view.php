@@ -12,9 +12,9 @@ if (!$obj->load($note_id)) {
 }
 
 print '
-<script language="javascript" type="text/javascript">
+<script type="text/javascript">
     function delIt() {
-        if (confirm("' . $AppUI->_('doDelete') . ' note?")){
+        if (confirm("' . $AppUI->_('doDelete', UI_OUTPUT_JS) . ' ' . $AppUI->_('note', UI_OUTPUT_JS) . '?")) {
             document.frmDelete.submit();
         }
     }
@@ -63,7 +63,7 @@ $view = new w2p_Output_HTML_ViewHelper($AppUI);
 ?>
 
 <div class="std view notebook">
-    <div class="column left" style="width: 25%">
+    <div class="column left">
         <p><?php $view->showLabel('Note Title'); ?>
             <?php $view->showField('note_name', $obj->note_name); ?>
         </p>
@@ -89,9 +89,9 @@ $view = new w2p_Output_HTML_ViewHelper($AppUI);
             <?php $view->showField('_datetime', $obj->note_modified); ?>
         </p>
     </div>
-    <div class="column right" style="width: 70%;">
+    <div class="column right">
         <p><?php $view->showLabel('Private'); ?>
-            <input type="checkbox" disabled="disabled" name="note_private" <?php echo ($obj->note_private ? 'checked="checked"' : ''); ?> />
+            <?php echo $AppUI->_($obj->note_private ? 'Yes' : 'No'); ?>
         </p>
         <p><?php $view->showLabel('Category'); ?>
             <?php $view->showField('note_category', $categories[$obj->note_category]); ?>
