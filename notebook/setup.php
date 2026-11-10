@@ -139,6 +139,7 @@ class CSetupNotebook extends w2p_System_Setup
                 $this->storeListSettings();
             case '4.0.0':
                 $this->convertBodies();
+                $this->fillCreators();
                 $this->dropTitleColumn();
             default:
                 //do nothing
@@ -166,6 +167,33 @@ class CSetupNotebook extends w2p_System_Setup
             $q->addTable('notes');
             $q->addUpdate('note_body', $text);
             $q->addWhere('note_id = ' . (int) $note['note_id']);
+            $q->exec();
+        }
+
+        return true;
+    }
+
+    /**
+     * Before 5.0 the creator was never saved. Fill it in from the history
+     *   entry written when the note was created, where there is one.
+     */
+    private function fillCreators()
+    {
+        $q = $this->_getQuery();
+        $q->addTable('history');
+        $q->addQuery('history_item, history_user');
+        $q->addWhere("history_table = 'notes'");
+        $q->addWhere("history_action = 'Create'");
+        // the newest entry wins if a note id was used before (a reinstall)
+        $q->addOrder('history_id ASC');
+        $creators = $q->loadHashList();
+
+        foreach ($creators as $note_id => $user_id) {
+            $q = $this->_getQuery();
+            $q->addTable('notes');
+            $q->addUpdate('note_creator', (int) $user_id);
+            $q->addWhere('note_id = ' . (int) $note_id);
+            $q->addWhere('note_creator = 0');
             $q->exec();
         }
 

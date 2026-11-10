@@ -65,6 +65,7 @@ class CNotebook extends w2p_Core_BaseObject
     {
         $q = $this->_getQuery();
         $this->note_created = $q->dbfnNowWithTZ();
+        $this->note_creator = (int) $this->_AppUI->user_id;
 
         parent::hook_preCreate();
     }
