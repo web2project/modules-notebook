@@ -186,7 +186,7 @@ function setTask( key, val ) {
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Note Doc URL'); ?>:</label>
-				<input type="field" class="text url" name="note_doc_url" value="<?php echo htmlspecialchars((string) $object->note_doc_url, ENT_QUOTES); ?>" />
+				<input type="url" class="text url" name="note_doc_url" value="<?php echo htmlspecialchars((string) $object->note_doc_url, ENT_QUOTES); ?>" />
 				<a href="javascript: void(0);" onclick="testURL()">[test]</a>
 			</p>
 			<p>
