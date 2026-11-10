@@ -26,6 +26,10 @@ $config['mod_main_class'] = 'CNotebook'; // the name of the PHP class used by th
 $config['permissions_item_table'] = 'notes';
 $config['permissions_item_field'] = 'note_id';
 $config['permissions_item_label'] = 'note_name';
+$config['requirements'] = array(
+    array('require' => 'php',         'comparator' => '>=', 'version' => '8.3'),
+    array('require' => 'web2project', 'comparator' => '>=', 'version' => '5'),
+);
 
 if ($a == 'setup') {
 	echo w2PshowModuleConfig($config);
@@ -54,6 +58,10 @@ class CSetupNotebook extends w2p_System_Setup
 
 	public function install()
     {
+        if (!$this->_meetsRequirements()) {
+            return false;
+        }
+
         $q = $this->_getQuery();
 		$q->createTable('notes');
 		$q->createDefinition('(
@@ -69,7 +77,7 @@ class CSetupNotebook extends w2p_System_Setup
             `note_record_id` int(10) unsigned NOT NULL default 0,
             `note_category` int(3) unsigned NOT NULL default 0,
             `note_status` int(3) unsigned NOT NULL default 0,
-            `note_title` varchar(255) NOT NULL default \'\',
+            `note_name` varchar(255) NOT NULL default \'\',
             `note_body` text NOT NULL,
             `note_doc_url` varchar(255) NOT NULL default \'\',
             `note_private` int(1) unsigned NOT NULL default 0,
@@ -83,9 +91,11 @@ class CSetupNotebook extends w2p_System_Setup
             KEY idx_note_task ( note_task ) ,
             KEY idx_note_user ( note_creator ) ,
             KEY idx_note_parent ( note_parent )
-            ) ENGINE = MYISAM ');
+            ) ENGINE = MYISAM DEFAULT CHARSET=utf8 ');
 
         if (!$q->exec()) {
+            $this->_errors['install'] = 'Notebook: the notes table could not be created. ' .
+                (new w2p_Database_Connection($GLOBALS['db']))->error();
             return false;
         }
 
@@ -115,17 +125,25 @@ class CSetupNotebook extends w2p_System_Setup
             $i++;
         }
 
-        $this->addColumns();
+        $this->storeListSettings();
 
         return parent::install();
 	}
 
-    public function upgrade($old_version) {
+    public function upgrade($old_version)
+    {
+        if (!$this->_meetsRequirements()) {
+            return false;
+        }
+
+        // NOTE: the cases fall through so every later step runs too.
         switch ($old_version) {
             case '3.0.0':
-                $this->addColumns();
+                $this->addNameColumn();
+                $this->storeListSettings();
             case '4.0.0':
                 $this->convertBodies();
+                $this->dropTitleColumn();
             default:
                 //do nothing
         }
@@ -158,16 +176,45 @@ class CSetupNotebook extends w2p_System_Setup
         return true;
     }
 
-    private function addColumns()
+    /**
+     * 4.0 renamed note_title to note_name (so the core list and view helpers
+     *   recognise it): add the column and copy the titles across.
+     */
+    private function addNameColumn()
     {
         $q = $this->_getQuery();
         $q->alterTable('notes');
-        $q->addField('note_name', 'varchar(255)');
+        $q->createDefinition("note_name varchar(255) NOT NULL default ''");
         $q->exec();
 
-        $q->clear();
+        $q = $this->_getQuery();
         $q->addTable('notes');
         $q->addUpdate('note_name', 'note_title', false, true);
+        $q->exec();
+
+        return true;
+    }
+
+    /**
+     * Nothing has written note_title since 4.0, so it only holds stale titles.
+     *   Every 3.x and 4.x table has it; a 5.0 install never runs this.
+     */
+    private function dropTitleColumn()
+    {
+        $q = $this->_getQuery();
+        $q->alterTable('notes');
+        $q->createDefinition(array(array('action' => 'DROP', 'type' => '', 'spec' => 'note_title')));
+        $q->exec();
+
+        return true;
+    }
+
+    private function storeListSettings()
+    {
+        $q = $this->_getQuery();
+        $q->setDelete('module_config');
+        $q->addWhere("module_name = 'notebook'");
+        $q->addWhere("module_config_name = 'index_list'");
         $q->exec();
 
         $module = new w2p_System_Module();
