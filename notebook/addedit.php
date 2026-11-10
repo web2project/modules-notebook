@@ -168,6 +168,7 @@ function setTask( key, val ) {
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Private'); ?>:</label>
+				<input type="hidden" name="note_private" value="0" />
 				<input type="checkbox" value="1" name="note_private" <?php echo ($object->note_private ? 'checked="checked"' : ''); ?> />
 			</p>
 			<?php if ($object_id) { ?>
