@@ -78,6 +78,45 @@ class CNotebook extends w2p_Core_BaseObject
         parent::hook_preStore();
     }
 
+    /**
+     * Turns a note body written with the old TinyMCE editor into plain text.
+     *   Bodies with no HTML tags are returned unchanged, so a plain note that
+     *   happens to contain "<" is left alone.
+     *
+     * @param string $body
+     *
+     * @return string
+     */
+    public static function htmlToText($body)
+    {
+        $body = (string) $body;
+        $tags = 'p|br|div|span|ul|ol|li|strong|b|em|i|u|s|strike|sub|sup|h[1-6]|table|thead|tbody|tr|td|th|a|img|hr|blockquote|pre|font|address|del|ins|abbr|acronym|cite';
+        if (!preg_match('#</?(' . $tags . ')\b[^>]*>#i', $body)) {
+            return $body;
+        }
+
+        // links keep their address: "text (https://...)"
+        $body = preg_replace_callback('#<a\b[^>]*href=["\']([^"\']*)["\'][^>]*>(.*?)</a>#is', function ($m) {
+            $text = trim(strip_tags($m[2]));
+            $href = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            return ('' == $text || $text == $href) ? $href : $text . ' (' . $href . ')';
+        }, $body);
+        $body = preg_replace('#[\r\n]+#', ' ', $body);
+        $body = preg_replace('#<br\s*/?>#i', "\n", $body);
+        $body = preg_replace('#<li\b[^>]*>#i', "\n- ", $body);
+        $body = preg_replace('#</(td|th)>#i', "\t", $body);
+        $body = preg_replace('#<hr\b[^>]*>#i', "\n----\n", $body);
+        $body = preg_replace('#</(p|div|h[1-6]|ul|ol|table|tr|blockquote|pre|address)>#i', "\n\n", $body);
+        $body = strip_tags($body);
+        $body = html_entity_decode($body, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $body = str_replace("\xc2\xa0", ' ', $body);
+        $body = preg_replace('#[ \t]+\n#', "\n", $body);
+        $body = preg_replace('#\n[ \t]+(?!- )#', "\n", $body);
+        $body = preg_replace("#\n{3,}#", "\n\n", $body);
+
+        return trim($body);
+    }
+
     public function loadAll($order = null, $where = null)
     {
         $q = $this->_getQuery();

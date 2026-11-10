@@ -6,7 +6,7 @@ if (!defined('W2P_BASE_DIR')) {
 /**
  *  Name: Notebook
  *  Directory: notebook
- *  Version 4.0.0
+ *  Version 5.0.0
  *  Type: user
  *  UI Name: Notebook
  *  UI Icon: ?
@@ -14,7 +14,7 @@ if (!defined('W2P_BASE_DIR')) {
 
 $config = array();
 $config['mod_name'] = 'Notebook'; // name the module
-$config['mod_version'] = '4.0.0'; // add a version number
+$config['mod_version'] = '5.0.0'; // add a version number
 $config['mod_directory'] = 'notebook'; // tell web2Project where to find this module
 $config['mod_setup_class'] = 'CSetupNotebook'; // the name of the PHP setup class (used below)
 $config['mod_type'] = 'user'; // 'core' for modules distributed with w2P by standard, 'user' for additional modules from dotmods
@@ -124,9 +124,37 @@ class CSetupNotebook extends w2p_System_Setup
         switch ($old_version) {
             case '3.0.0':
                 $this->addColumns();
+            case '4.0.0':
+                $this->convertBodies();
             default:
                 //do nothing
         }
+        return true;
+    }
+
+    /**
+     * 5.0 drops the TinyMCE editor: note bodies are plain text, shown the same
+     *   way as core descriptions. Convert the HTML that TinyMCE stored.
+     */
+    private function convertBodies()
+    {
+        $q = $this->_getQuery();
+        $q->addTable('notes');
+        $q->addQuery('note_id, note_body');
+        $notes = $q->loadList();
+
+        foreach ($notes as $note) {
+            $text = CNotebook::htmlToText($note['note_body']);
+            if ($text === $note['note_body']) {
+                continue;
+            }
+            $q = $this->_getQuery();
+            $q->addTable('notes');
+            $q->addUpdate('note_body', $text);
+            $q->addWhere('note_id = ' . (int) $note['note_id']);
+            $q->exec();
+        }
+
         return true;
     }
 

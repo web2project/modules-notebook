@@ -11,16 +11,7 @@ if (!$obj->load($note_id)) {
     $AppUI->redirect(ACCESS_DENIED);
 }
 
-print '<script type="text/javascript" src="' . w2PgetConfig('base_url') . '/lib/tiny_mce/tiny_mce.js"></script>';
 print '
-<script language="javascript" type="text/javascript">
-	tinyMCE.init({
-		// General options
-		mode : "textareas",
-		theme : "advanced",
-		readonly : true
-	});
-</script>
 <script language="javascript" type="text/javascript">
     function delIt() {
         if (confirm("' . $AppUI->_('doDelete') . ' note?")){
