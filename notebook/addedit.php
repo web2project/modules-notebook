@@ -45,24 +45,6 @@ $note_parent = (int) w2PgetParam($_GET, 'note_parent', 0);
 $note_project = (int) w2PgetParam($_GET, 'project_id', 0);
 $note_company = (int) w2PgetParam($_GET, 'company_id', 0);
 
-$q = new w2p_Database_Query();
-$q->addQuery('notes.*');
-$q->addQuery('u.user_username');
-$q->addQuery('c.contact_first_name, c.contact_last_name');
-$q->addQuery('cm.contact_first_name AS modified_first_name, cm.contact_last_name AS modified_last_name');
-$q->addQuery('project_id');
-$q->addQuery('task_id, task_name');
-$q->addQuery('company_id, company_name');
-$q->addTable('notes');
-$q->leftJoin('users', 'u', 'note_creator = u.user_id');
-$q->leftJoin('contacts', 'c', 'u.user_contact = c.contact_id');
-$q->leftJoin('users', 'um', 'note_modified_by = um.user_id');
-$q->leftJoin('contacts', 'cm', 'um.user_contact = cm.contact_id');
-$q->leftJoin('companies', 'co', 'company_id = note_company');
-$q->leftJoin('projects', 'p', 'project_id = note_project');
-$q->leftJoin('tasks', 't', 'task_id = note_task');
-$q->addWhere('note_id = ' . (int)$object_id);
-
 $df = $AppUI->getPref('SHDATEFORMAT');
 $tf = $AppUI->getPref('TIMEFORMAT');
 
@@ -89,25 +71,18 @@ if ($object->note_project) {
 	$note_project = $object->note_project;
 }
 if ($object->note_task) {
-	$note_task = $object->note_task;
+	$note_task = (int) $object->note_task;
 }
-// a note on a task belongs to the task's project
-if ($note_task && !$note_project) {
+$task_name = '';
+if ($note_task) {
 	$_task = new CTask();
-	$_task->load($note_task);
-	$note_project = (int) $_task->task_project;
-}
-if ($object->note_task) {
-	$note_task = $object->note_task;
-	$task_name = $object->task_name;
-} elseif ($note_task) {
-	$q->clear();
-	$q->addQuery('task_name');
-	$q->addTable('tasks');
-	$q->addWhere('task_id = ' . (int)$note_task);
-	$task_name = $q->loadResult();
-} else {
-	$task_name = '';
+	if ($_task->load($note_task)) {
+		$task_name = $_task->task_name;
+		// a note on a task belongs to the task's project
+		if (!$note_project) {
+			$note_project = (int) $_task->task_project;
+		}
+	}
 }
 
 if (intval(w2PgetParam($_GET, 'company_id', 0))) {
