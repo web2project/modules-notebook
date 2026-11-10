@@ -33,7 +33,10 @@ if ($note_status > 0) {
 	$where[] = "note_status = $note_status";
 }
 if ('' !== $search) {
-	$where[] = "(note_name LIKE '%$search%' OR note_body LIKE '%$search%')";
+	// The term is quoted as one literal; % and _ in it match themselves.
+	$q = new w2p_Database_Query();
+	$like = $q->quote('%' . addcslashes($search, '%_\\') . '%');
+	$where[] = "(note_name LIKE $like OR note_body LIKE $like)";
 }
 
 $filter = implode(" AND ", $where);
