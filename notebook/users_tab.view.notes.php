@@ -3,7 +3,7 @@ if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly');
 }
 
-global $AppUI, $m, $obj, $user_id, $company_id, $showCompany, $notebookCreator;
+global $notebookPageUrl, $AppUI, $m, $obj, $user_id, $company_id, $showCompany, $notebookCreator;
 
 if (canView('notebook')) {
 	// a user's Notes tab lists the notes that user wrote
@@ -13,7 +13,6 @@ if (canView('notebook')) {
 	}
 	$company_id = 0;
 	$notebookCreator = (int) $user_id;
-
-    $m = 'users&a=view&user_id=' . $user_id;                        // override to correct pagination issue
+	$notebookPageUrl = 'users&a=view&user_id=' . (int) $user_id;   // page links come back to this tab
 	include (W2P_BASE_DIR . '/modules/notebook/index_table.php');
 }

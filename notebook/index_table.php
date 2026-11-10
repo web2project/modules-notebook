@@ -4,7 +4,7 @@ if (!defined('W2P_BASE_DIR')) {
 }
 global $AppUI, $deny1, $canRead, $canEdit;
 global $notebook, $company_id, $project_id, $task_id, $user_id, $note_status, $showCompany, $m, $tab, $search_string;
-global $company, $noteCategoryTabs, $notebookCreator;
+global $company, $noteCategoryTabs, $notebookCreator, $notebookPageUrl;
 
 $company_id = (int) w2PgetParam($_REQUEST, 'company_id', 0);
 $project_id = (int) w2PgetParam($_REQUEST, 'project_id', 0);
@@ -71,7 +71,7 @@ $xpg_min = $xpg_pagesize * ($page - 1); // This is where we start our record set
 $xpg_totalrecs = count($items);
 $items = array_slice($items, $xpg_min, $xpg_pagesize);
 
-$pageNav = buildPaginationNav($AppUI, $m, $tab, $xpg_totalrecs, $xpg_pagesize, $page);
+$pageNav = buildPaginationNav($AppUI, $notebookPageUrl ? $notebookPageUrl : $m, $tab, $xpg_totalrecs, $xpg_pagesize, $page);
 echo $pageNav;
 
 $note_category = w2PgetSysVal('NoteCategory');
