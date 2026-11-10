@@ -101,6 +101,9 @@ if ($note_project && !isset($projects[$note_project])) {
 }
 $projects = arrayMerge(array('0' => $AppUI->_('None')), $projects);
 
+$categories = w2PgetSysVal('NoteCategory');
+$statuses = w2PgetSysVal('NoteStatus');
+
 ?>
 <script language="javascript" type="text/javascript">
 function submitIt() {
@@ -158,11 +161,11 @@ function setTask( key, val ) {
 			<?php } ?>
 			<p>
 				<label><?php echo $AppUI->_('Category'); ?>:</label>
-				<?php echo arraySelect(w2PgetSysVal('NoteCategory'), 'note_category', 'class="text"', $object->note_category, true); ?>
+				<?php echo arraySelect($categories, 'note_category', 'class="text"', $object->note_category, true); ?>
 			</p>
 			<p>
 				<label><?php echo $AppUI->_('Status'); ?>:</label>
-				<?php echo arraySelect(w2PgetSysVal('NoteStatus'), 'note_status', 'class="text"', $object->note_status, true); ?>
+				<?php echo arraySelect($statuses, 'note_status', 'class="text"', $object->note_status, true); ?>
 			</p>
 			<?php if ($company_name) { ?>
 				<p>
