@@ -139,7 +139,13 @@ class CNotebook extends w2p_Core_BaseObject
         $q = $this->_getQuery();
         $q->addQuery('notes.*');
         $q->addTable($this->_tbl);
-        $q->addOrder('note_modified');
+        // newest first unless the caller names one of the note columns
+        if ($order && property_exists($this, $order)) {
+            $q->addOrder($order);
+        } else {
+            $q->addOrder('note_modified DESC');
+            $q->addOrder('note_id DESC');
+        }
 
         if ($where) {
             $q->addWhere($where);
