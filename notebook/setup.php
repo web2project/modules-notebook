@@ -31,10 +31,6 @@ $config['requirements'] = array(
     array('require' => 'web2project', 'comparator' => '>=', 'version' => '5'),
 );
 
-if ($a == 'setup') {
-	echo w2PshowModuleConfig($config);
-}
-
 class CSetupNotebook extends w2p_System_Setup
 {
 	public function remove()
