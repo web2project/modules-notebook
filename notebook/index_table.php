@@ -2,7 +2,7 @@
 if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly.');
 }
-global $AppUI, $m, $tab, $noteCategoryTabs, $notebookFilter, $notebookPageUrl;
+global $AppUI, $m, $tab, $noteCategoryTabs, $notebookFilter;
 
 /*
  * $notebookFilter is set by whoever includes this list: the Notebook index
@@ -68,13 +68,11 @@ if (0 == count($fields)) {
     $fields = array_combine($fieldList, $fieldNames);
 }
 
-$xpg_pagesize = w2PgetConfig('page_size', 50);
-$xpg_min = $xpg_pagesize * ($page - 1); // This is where we start our record set from
-// counts total recs from selection
-$xpg_totalrecs = count($items);
-$items = array_slice($items, $xpg_min, $xpg_pagesize);
-
-$pageNav = buildPaginationNav($AppUI, $notebookPageUrl ? $notebookPageUrl : $m, $tab, $xpg_totalrecs, $xpg_pagesize, $page);
+$paginator = new w2p_Utilities_Paginator($items);
+$items = $paginator->getItemsOnPage($page);
+// Page links keep the current view (e.g. a=view&project_id=1), so paging a
+//   Notes tab on another module's page stays on that tab.
+$pageNav = $paginator->buildNavigation($AppUI, $m, $tab, w2p_Utilities_Paginator::currentQueryParams());
 echo $pageNav;
 
 $note_category = w2PgetSysVal('NoteCategory');
