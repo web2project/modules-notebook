@@ -35,6 +35,9 @@ $search_string = w2PgetParam($_POST, 'search_string', '');
 $search_string = w2PformSafe($search_string, true);
 
 $notebook = new CNotebook();
+if (!$notebook->canAccess()) {
+	$AppUI->redirect(ACCESS_DENIED);
+}
 $canCreate = $notebook->canCreate();
 
 // setup the title block

@@ -148,8 +148,87 @@ class CNotebook extends w2p_Core_BaseObject
         $q->leftJoin('contacts', 'c', 'user_contact = contact_id');
         $q->addQuery('contact_first_name, contact_last_name');
 
-        // TODO: respect permissions
+        foreach ($this->getVisibleSQL($this->_AppUI->user_id) as $criteria) {
+            $q->addWhere($criteria);
+        }
 
         return $q->loadHashList($this->_tbl_key);
+    }
+
+    /**
+     * The conditions a note must meet for a user to see it: a note on a
+     *   project or company is only visible to users who can see that project
+     *   or company. Notes without one are not restricted by this.
+     *
+     * @param int $uid
+     *
+     * @return array<int, string> SQL conditions on the notes table
+     */
+    public function getVisibleSQL($uid)
+    {
+        $uid = (int) $uid;
+        static $cache = array();
+        if (!isset($cache[$uid])) {
+            $project = new CProject();
+            $projects = $project->getAllowedRecords($uid, 'projects.project_id,project_name', '', null, null, 'projects');
+            $company = new CCompany();
+            $companies = $company->getAllowedRecords($uid, 'companies.company_id,company_name', '', null, null, 'companies');
+
+            $projectIds = count($projects) ? implode(',', array_map('intval', array_keys($projects))) : '0';
+            $companyIds = count($companies) ? implode(',', array_map('intval', array_keys($companies))) : '0';
+            $cache[$uid] = array(
+                "(note_project = 0 OR note_project IN ($projectIds))",
+                "(note_company = 0 OR note_company IN ($companyIds))",
+            );
+        }
+
+        return $cache[$uid];
+    }
+
+    /**
+     * Whether the current user may see this (saved) note, by getVisibleSQL().
+     *   A note that isn't saved yet is always visible.
+     *
+     * @return bool
+     */
+    protected function isVisible()
+    {
+        $id = (int) $this->{$this->_tbl_key};
+        if (!$id) {
+            return true;
+        }
+
+        $q = new w2p_Database_Query();
+        $q->addTable($this->_tbl);
+        $q->addQuery('COUNT(*)');
+        $q->addWhere($this->_tbl_key . ' = ' . $id);
+        foreach ($this->getVisibleSQL($this->_AppUI->user_id) as $criteria) {
+            $q->addWhere($criteria);
+        }
+
+        return (bool) $q->loadResult();
+    }
+
+    public function canView()
+    {
+        return parent::canView() && $this->isVisible();
+    }
+
+    public function canEdit()
+    {
+        return parent::canEdit() && $this->isVisible();
+    }
+
+    public function canDelete($notUsed = '', $oid = null, $joins = null)
+    {
+        if ($oid) {
+            $this->{$this->_tbl_key} = (int) $oid;
+        }
+        if (!$this->isVisible()) {
+            $this->_error['noDeletePermission'] = $this->_AppUI->_('noDeletePermission');
+            return false;
+        }
+
+        return parent::canDelete($notUsed, $oid, $joins);
     }
 }
