@@ -57,6 +57,7 @@ class CNotebook extends w2p_Core_BaseObject
         $search['table_orderby'] = 'note_name';
         $search['search_fields'] = array('n.note_name', 'n.note_body', 'n.note_doc_url');
         $search['display_fields'] = array('n.note_name', 'n.note_body', 'n.note_doc_url');
+        $search['table_extra'] = implode(' AND ', $this->getVisibleSQL($this->_AppUI->user_id));
 
         return $search;
     }
@@ -158,7 +159,7 @@ class CNotebook extends w2p_Core_BaseObject
     /**
      * The conditions a note must meet for a user to see it: a note on a
      *   project or company is only visible to users who can see that project
-     *   or company. Notes without one are not restricted by this.
+     *   or company, and a private note only to its creator.
      *
      * @param int $uid
      *
@@ -176,9 +177,19 @@ class CNotebook extends w2p_Core_BaseObject
 
             $projectIds = count($projects) ? implode(',', array_map('intval', array_keys($projects))) : '0';
             $companyIds = count($companies) ? implode(',', array_map('intval', array_keys($companies))) : '0';
+            // Private notes are for their creator only. A private note whose
+            //   creator isn't known (from before 5.0) stays visible to the
+            //   system administrators so it can't be lost.
+            $private = '(note_private = 0 OR note_creator = ' . $uid;
+            if ($uid == (int) $this->_AppUI->user_id && canEdit('system')) {
+                $private .= ' OR note_creator = 0';
+            }
+            $private .= ')';
+
             $cache[$uid] = array(
                 "(note_project = 0 OR note_project IN ($projectIds))",
                 "(note_company = 0 OR note_company IN ($companyIds))",
+                $private,
             );
         }
 
