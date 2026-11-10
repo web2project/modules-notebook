@@ -1,4 +1,4 @@
-<?php /* $Id: addedit.php 374 2012-06-26 07:35:45Z caseydk $ $URL: svn+ssh://caseydk@svn.code.sf.net/p/web2project-mod/code/notebook/trunk/addedit.php $ */
+<?php
 if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly.');
 }
@@ -105,7 +105,7 @@ $categories = w2PgetSysVal('NoteCategory');
 $statuses = w2PgetSysVal('NoteStatus');
 
 ?>
-<script language="javascript" type="text/javascript">
+<script type="text/javascript">
 function submitIt() {
 	var f = document.editFrm;
 	f.submit();

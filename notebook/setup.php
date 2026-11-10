@@ -1,4 +1,4 @@
-<?php /* $Id: setup.php 183 2011-01-03 16:50:41Z caseydk $ $URL: svn+ssh://caseydk@svn.code.sf.net/p/web2project-mod/code/notebook/trunk/setup.php $ */
+<?php
 if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly.');
 }

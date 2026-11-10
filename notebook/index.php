@@ -20,7 +20,6 @@ if (w2PgetParam($_GET, 'tab', -1) != -1) {
 	$AppUI->setState('NoteIdxTab', w2PgetParam($_GET, 'tab'));
 }
 $tab = $AppUI->getState('NoteIdxTab') !== null ? $AppUI->getState('NoteIdxTab') : 0;
-$active = intval(!$AppUI->getState('NoteIdxTab'));
 
 // the companies with notes, filed on the company or on one of its projects
 $extra = array('from' => 'notes', 'where' => '(companies.company_id = note_company OR companies.company_id IN (SELECT project_company FROM projects WHERE project_id = note_project))');

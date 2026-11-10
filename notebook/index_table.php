@@ -1,10 +1,8 @@
-<?php /* $Id: index_table.php 374 2012-06-26 07:35:45Z caseydk $ $URL: svn+ssh://caseydk@svn.code.sf.net/p/web2project-mod/code/notebook/trunk/index_table.php $ */
+<?php
 if (!defined('W2P_BASE_DIR')) {
 	die('You should not access this file directly.');
 }
-global $AppUI, $deny1, $canRead, $canEdit;
-global $notebook, $showCompany, $m, $tab;
-global $company, $noteCategoryTabs, $notebookFilter, $notebookPageUrl;
+global $AppUI, $m, $tab, $noteCategoryTabs, $notebookFilter, $notebookPageUrl;
 
 /*
  * $notebookFilter is set by whoever includes this list: the Notebook index
@@ -20,9 +18,6 @@ $note_status = (int) ($filter['status'] ?? -1);
 $search = (string) ($filter['search'] ?? '');
 
 $page = max(1, (int) w2PgetParam($_GET, 'page', 1));
-
-$project = new CProject();
-$task = new CTask();
 
 $notebook = new CNotebook();
 $where = [];
