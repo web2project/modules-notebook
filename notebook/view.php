@@ -25,10 +25,12 @@ print '
 $ttl = 'View Note';
 $titleBlock = new w2p_Theme_TitleBlock($ttl, 'notebook.png', $m, $m . '.' . $a);
 $titleBlock->addCrumb('?m=' . $m, 'notes list');
-$titleBlock->addCrumb('?m=' . $m . '&a=addedit&note_id=' . $note_id, 'edit note');
-$canDelete = $perms->checkModule($m, 'delete');
-if ($canDelete && $note_id > 0) {
-	$titleBlock->addCrumbDelete('delete note', $canDelete, $msg);
+if ($obj->canEdit()) {
+	$titleBlock->addCrumb('?m=' . $m . '&a=addedit&note_id=' . $note_id, 'edit note');
+}
+$canDelete = $obj->canDelete();
+if ($canDelete) {
+	$titleBlock->addCrumbDelete('delete note', $canDelete);
 }
 $titleBlock->show();
 

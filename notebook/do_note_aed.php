@@ -24,8 +24,20 @@ if ($task_id) {
     $extras = '&task_id=' . $task_id;
 }
 
+$note_id = (int) w2PgetParam($_POST, 'note_id', 0);
+$errorRedirect = 'm=notebook&a=addedit' . $extras;
+if ($delete) {
+    // a refused delete goes back to the note, with a readable message
+    $errorRedirect = 'm=notebook&a=view&note_id=' . $note_id;
+    $note = new CNotebook();
+    if (!$note->canDelete('', $note_id)) {
+        $AppUI->setMsg('You are not allowed to delete this note.', UI_MSG_ERROR);
+        $AppUI->redirect($errorRedirect);
+    }
+}
+
 $controller = new w2p_Controllers_Base(
-    new CNotebook(), $delete, 'Notebook', $successRedirect . $extras, 'm=notebook&a=addedit' . $extras
+    new CNotebook(), $delete, 'Notebook', $successRedirect . $extras, $errorRedirect
 );
 
 $AppUI = $controller->process($AppUI, $_POST);
