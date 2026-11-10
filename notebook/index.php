@@ -52,19 +52,12 @@ if ($canCreate) {
 }
 $titleBlock->show();
 
-$note_types = w2PgetSysVal('NoteCategory');
-if ($tab != -1) {
-	array_unshift($note_types, 'All Notes');
-}
-array_map(array($AppUI, '_'), $note_types);
+// One tab for all notes, then one per category. index_table.php reads
+//   $noteCategoryTabs to know which category each tab shows.
+$noteCategoryTabs = array(-1 => 'All Notes') + w2PgetSysVal('NoteCategory');
 
 $tabBox = new CTabBox('?m=notebook', W2P_BASE_DIR . '/modules/notebook/', $tab);
-
-$i = 0;
-
-foreach ($note_types as $note_type) {
+foreach ($noteCategoryTabs as $note_type) {
 	$tabBox->add('index_table', $note_type);
-	++$i;
 }
-
 $tabBox->show();

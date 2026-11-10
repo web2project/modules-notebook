@@ -4,7 +4,7 @@ if (!defined('W2P_BASE_DIR')) {
 }
 global $AppUI, $deny1, $canRead, $canEdit;
 global $notebook, $company_id, $project_id, $task_id, $user_id, $note_status, $showCompany, $m, $tab, $search_string;
-global $company;
+global $company, $noteCategoryTabs;
 
 $company_id = (int) w2PgetParam($_REQUEST, 'company_id', 0);
 $project_id = (int) w2PgetParam($_REQUEST, 'project_id', 0);
@@ -28,6 +28,15 @@ if ($project_id) {
 }
 if ($task_id) {
 	$where[] = "note_task = $task_id";
+}
+// On the Notebook index each tab is a category (set up in index.php); the
+//   Notes tabs on other modules' pages show every category.
+if (is_array($noteCategoryTabs) && isset($this) && $this instanceof w2p_Theme_TabBox) {
+	$_categories = array_keys($noteCategoryTabs);
+	$_category = $_categories[(int) $this->currentTabId] ?? -1;
+	if ($_category >= 0) {
+		$where[] = 'note_category = ' . (int) $_category;
+	}
 }
 if ($note_status > 0) {
 	$where[] = "note_status = $note_status";
